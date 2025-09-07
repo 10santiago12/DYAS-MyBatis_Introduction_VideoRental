@@ -1,55 +1,85 @@
-CREATE TABLE IF NOT EXISTS VI_CLIENTES (
-  documento BIGINT NOT NULL,
-  nombre VARCHAR(50) NOT NULL,
-  telefono VARCHAR(20) NOT NULL,
-  direccion VARCHAR(150) NOT NULL,
-  email VARCHAR(150) NOT NULL,
-  vetado TINYINT NOT NULL
+-- =====================================================================
+-- BORRAR TABLAS SI YA EXISTEN (para reiniciar la BD)
+-- =====================================================================
+DROP TABLE IF EXISTS VI_ITEMRENTADO;
+DROP TABLE IF EXISTS VI_ITEMS;
+DROP TABLE IF EXISTS VI_TIPOITEM;
+DROP TABLE IF EXISTS VI_CLIENTES;
+
+-- =====================================================================
+-- TABLA DE CLIENTES
+-- =====================================================================
+CREATE TABLE VI_CLIENTES (
+    documento BIGINT PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    telefono TEXT,
+    direccion TEXT,
+    email TEXT,
+    vetado BOOLEAN DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS VI_TIPOITEM (
-  id INT NOT NULL,
-  descripcion VARCHAR(50) NOT NULL
+-- =====================================================================
+-- TABLA DE TIPO DE ITEM (categorías de ítems)
+-- =====================================================================
+CREATE TABLE VI_TIPOITEM (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    descripcion TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS VI_ITEMS (
-  id INT NOT NULL,
-  nombre VARCHAR(50) NOT NULL,
-  descripcion VARCHAR(500) NOT NULL,
-  fechalanzamiento DATE NOT NULL,
-  tarifaxdia BIGINT NOT NULL,
-  formatorenta VARCHAR(20) NOT NULL,
-  genero VARCHAR(20) NOT NULL,
-  TIPOITEM_id INT NOT NULL
+-- =====================================================================
+-- TABLA DE ITEMS (películas, videojuegos, etc.)
+-- =====================================================================
+CREATE TABLE VI_ITEMS (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    fechalanzamiento DATE,
+    tarifaxdia REAL,
+    formatorenta TEXT,
+    genero TEXT,
+    TIPOITEM_id INT NOT NULL,
+    FOREIGN KEY (TIPOITEM_id) REFERENCES VI_TIPOITEM(id)
 );
 
-CREATE TABLE IF NOT EXISTS VI_ITEMRENTADO (
-  CLIENTES_documento INTEGER NOT NULL,
-  ITEMS_id INTEGER NOT NULL,
-  fechainiciorenta DATE NOT NULL,
-  fechafinrenta DATE NOT NULL
+-- =====================================================================
+-- TABLA DE ÍTEMS RENTADOS (relación cliente - ítem)
+-- =====================================================================
+CREATE TABLE VI_ITEMRENTADO (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CLIENTES_documento BIGINT NOT NULL,
+    ITEMS_id INT NOT NULL,
+    fechainiciorenta DATE NOT NULL,
+    fechafinrenta DATE,
+    FOREIGN KEY (CLIENTES_documento) REFERENCES VI_CLIENTES(documento),
+    FOREIGN KEY (ITEMS_id) REFERENCES VI_ITEMS(id)
 );
 
--- Para la tabla VI_CLIENTES
-INSERT INTO VI_CLIENTES (documento, nombre, telefono, direccion, email, vetado) VALUES
-(123456789, 'Juan Perez', '1234567890', 'Calle 123', 'juan@example.com', 0),
-(987654321, 'Maria Gomez', '9876543210', 'Avenida 456', 'maria@example.com', 1),
-(555555555, 'Pedro Rodriguez', '5555555555', 'Carrera 789', 'pedro@example.com', 0);
+-- =====================================================================
+-- DATOS DE PRUEBA
+-- =====================================================================
 
--- Para la tabla VI_TIPOITEM
-INSERT INTO VI_TIPOITEM (id, descripcion) VALUES
-(1, 'Electrónico'),
-(2, 'Mueble'),
-(3, 'Herramienta');
+-- Tipos de ítem
+INSERT INTO VI_TIPOITEM (descripcion) VALUES ('Película');
+INSERT INTO VI_TIPOITEM (descripcion) VALUES ('Videojuego');
+INSERT INTO VI_TIPOITEM (descripcion) VALUES ('Serie');
 
--- Para la tabla VI_ITEMS
-INSERT INTO VI_ITEMS (id, nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id) VALUES
-(1, 'Televisor', 'Televisor de 50 pulgadas', '2023-01-01', 5000, 'Diario', 'Electrodoméstico', 1),
-(2, 'Sofá', 'Sofá de tres puestos', '2022-12-01', 8000, 'Diario', 'Mueble', 2),
-(3, 'Martillo', 'Martillo de carpintero', '2023-02-15', 2000, 'Diario', 'Herramienta', 3);
+-- Clientes
+INSERT INTO VI_CLIENTES (documento, nombre, telefono, direccion, email, vetado)
+VALUES (123, 'Juan Pérez', '3001234567', 'Calle 123', 'juan@example.com', 0);
 
--- Para la tabla VI_ITEMRENTADO
-INSERT INTO VI_ITEMRENTADO (CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta) VALUES
-(123456789, 1, '2024-03-15', '2024-03-20'),
-(987654321, 2, '2024-03-10', '2024-03-18'),
-(555555555, 3, '2024-03-12', '2024-03-17');
+INSERT INTO VI_CLIENTES (documento, nombre, telefono, direccion, email, vetado)
+VALUES (456, 'María Gómez', '3019876543', 'Carrera 45', 'maria@example.com', 0);
+
+-- Items
+INSERT INTO VI_ITEMS (nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
+VALUES ('Matrix', 'Película de ciencia ficción', '1999-03-31', 5000, 'DVD', 'Acción', 1);
+
+INSERT INTO VI_ITEMS (nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
+VALUES ('FIFA 21', 'Videojuego de fútbol', '2020-10-09', 7000, 'BluRay', 'Deportes', 2);
+
+-- Items rentados
+INSERT INTO VI_ITEMRENTADO (CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
+VALUES (123, 1, '2025-09-01', '2025-09-05');
+
+INSERT INTO VI_ITEMRENTADO (CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
+VALUES (456, 2, '2025-09-02', NULL);

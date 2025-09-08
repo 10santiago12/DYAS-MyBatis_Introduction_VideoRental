@@ -2,7 +2,6 @@ package edu.unisabana.dyas.sampleprj.dao.mybatis.mappers;
 
 import edu.unisabana.dyas.samples.entities.Item;
 import java.util.List;
-import org.apache.ibatis.annotations.Param;
 
 public interface ItemMapper {
 
@@ -11,7 +10,7 @@ public interface ItemMapper {
      * @param id id del item
      * @return Item encontrado
      */
-    public Item consultarItem(@Param("id") int id);
+    public Item consultarItem(int id);
 
     /**
      * Consultar todos los items
@@ -23,5 +22,5 @@ public interface ItemMapper {
      * Insertar un nuevo item
      * @param item objeto Item
      */
-    public void insertarItem(@Param("item") Item item);
+    public void insertarItem(Item item);
 }

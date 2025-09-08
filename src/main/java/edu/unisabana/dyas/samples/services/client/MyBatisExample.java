@@ -56,12 +56,19 @@ public class MyBatisExample {
             }
 
             System.out.println("\n========= INSERTANDO NUEVO ITEM =========");
-            TipoItem tipo = new TipoItem(1, "Videojuego"); // suponer que existe tipo con id=1
-            Item nuevo = new Item(tipo, 99, "Halo", "Shooter Sci-Fi", new Date(),
-                    3000, "Digital", "FPS");
+            TipoItem tipo = new TipoItem(1, "Videojuego"); // suponemos que existe tipo con id=1
+            Item nuevo = new Item();
+            nuevo.setTipo(tipo);
+            nuevo.setNombre("Halo");
+            nuevo.setDescripcion("Shooter Sci-Fi");
+            nuevo.setFechaLanzamiento(new Date());
+            nuevo.setTarifaxDia(3000);
+            nuevo.setFormatoRenta("Digital");
+            nuevo.setGenero("FPS");
+
             im.insertarItem(nuevo);
             sqlss.commit();
-            System.out.println("Item insertado: " + nuevo);
+            System.out.println("Item insertado con id generado: " + nuevo.getId());
 
             System.out.println("\n========= CONSULTANDO ITEMS =========");
             List<Item> items = im.consultarItems();
@@ -71,11 +78,10 @@ public class MyBatisExample {
 
             System.out.println("\n========= PROBANDO AGREGAR ITEM RENTADO =========");
             java.sql.Date inicio = new java.sql.Date(System.currentTimeMillis());
-            java.sql.Date fin = new java.sql.Date(System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000L);
-            cm.agregarItemRentadoACliente(12345, 99, inicio, fin);
+            java.sql.Date fin = new java.sql.Date(System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000);
+            cm.agregarItemRentadoACliente(12345, nuevo.getId(), inicio, fin);
             sqlss.commit();
-            System.out.println("Item rentado agregado al cliente con doc=12345");
-
+            System.out.println("Item rentado agregado al cliente con doc=12345 (itemId=" + nuevo.getId() + ")");
         }
     }
 }

@@ -1,18 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.unisabana.dyas.samples.entities;
 
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- *
- * @author cesarvefe
- */
-public class Item implements Serializable{
+public class Item implements Serializable {
     private TipoItem tipo;
     private int id;
     private String nombre;
@@ -22,7 +13,8 @@ public class Item implements Serializable{
     private String formatoRenta;
     private String genero;
 
-    public Item(TipoItem tipo, int id, String nombre, String descripcion, Date fechaLanzamiento, long tarifaxDia, String formatoRenta, String genero) {
+    public Item(TipoItem tipo, int id, String nombre, String descripcion, Date fechaLanzamiento,
+                long tarifaxDia, String formatoRenta, String genero) {
         this.tipo = tipo;
         this.id = id;
         this.nombre = nombre;
@@ -36,9 +28,6 @@ public class Item implements Serializable{
     public Item() {
     }
 
-    
-    
-    
     public TipoItem getTipo() {
         return tipo;
     }
@@ -55,8 +44,6 @@ public class Item implements Serializable{
         this.id = id;
     }
 
-
-
     public String getNombre() {
         return nombre;
     }
@@ -69,8 +56,8 @@ public class Item implements Serializable{
         return descripcion;
     }
 
-    public void setDescrpcion(String descrpcion) {
-        this.descripcion = descrpcion;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public Date getFechaLanzamiento() {
@@ -107,12 +94,11 @@ public class Item implements Serializable{
 
     @Override
     public String toString() {
-        return "Item{" + "tipo=" + tipo + ", id=" + id + ", nombre=" + nombre + ", tarifaxDia=" + tarifaxDia + '}';
+        return "Item{" +
+                "tipo=" + tipo +
+                ", id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", tarifaxDia=" + tarifaxDia +
+                '}';
     }
-
-
-    
-    
-    
-    
 }

@@ -19,7 +19,7 @@
 
     <!-- ResultMap para ItemRentado -->
     <resultMap type="ItemRentado" id="ItemRentadoResult">
-        <id property="id" column="ir_id"/>
+        <!-- ⚠️ QUITAMOS el id porque VI_ITEMRENTADO no tiene columna id -->
         <result property="fechainiciorenta" column="ir_fechainiciorenta"/>
         <result property="fechafinrenta" column="ir_fechafinrenta"/>
         <association property="item" javaType="Item" 
@@ -36,7 +36,7 @@
             c.direccion as c_direccion,
             c.email as c_email,
             c.vetado as c_vetado,
-            ir.id as ir_id,
+            -- ⚠️ QUITAMOS ir.id porque no existe
             ir.fechainiciorenta as ir_fechainiciorenta,
             ir.fechafinrenta as ir_fechafinrenta,
             i.id as i_id,
@@ -63,7 +63,7 @@
             c.direccion as c_direccion,
             c.email as c_email,
             c.vetado as c_vetado,
-            ir.id as ir_id,
+            -- ⚠️ QUITAMOS ir.id porque no existe
             ir.fechainiciorenta as ir_fechainiciorenta,
             ir.fechafinrenta as ir_fechafinrenta,
             i.id as i_id,
@@ -84,8 +84,8 @@
 
     <!-- Agregar item rentado -->
     <insert id="agregarItemRentadoACliente" parameterType="map">
-        INSERT INTO VI_ITEMRENTADO(id, CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
-        VALUES (null, #{id}, #{idit}, #{fechainicio}, #{fechafin})
+        INSERT INTO VI_ITEMRENTADO(CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
+        VALUES (#{id}, #{idit}, #{fechainicio}, #{fechafin})
     </insert>
 
 </mapper>

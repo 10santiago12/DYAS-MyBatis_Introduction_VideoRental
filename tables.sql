@@ -37,7 +37,7 @@ CREATE TABLE VI_ITEMS (
     tarifaxdia REAL,
     formatorenta TEXT,
     genero TEXT,
-    TIPOITEM_id INT NOT NULL,
+    TIPOITEM_id INTEGER NOT NULL,
     FOREIGN KEY (TIPOITEM_id) REFERENCES VI_TIPOITEM(id)
 );
 

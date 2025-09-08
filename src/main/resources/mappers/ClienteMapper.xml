@@ -5,7 +5,6 @@
 
 <mapper namespace="edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ClienteMapper">
 
-    <!-- ResultMap para Cliente -->
     <resultMap type="Cliente" id="ClienteResult">
         <id property="documento" column="c_documento"/>
         <result property="nombre" column="c_nombre"/>
@@ -13,68 +12,79 @@
         <result property="direccion" column="c_direccion"/>
         <result property="email" column="c_email"/>
         <result property="vetado" column="c_vetado"/>
-        <collection property="rentados" ofType="ItemRentado" 
+        <collection property="rentados" ofType="ItemRentado"
                     resultMap="ItemRentadoResult" columnPrefix="ir_"/>
     </resultMap>
 
-    <!-- ResultMap para ItemRentado -->
     <resultMap type="ItemRentado" id="ItemRentadoResult">
-        <!-- ⚠️ QUITAMOS el id porque VI_ITEMRENTADO no tiene columna id -->
+        <!-- Si quieres evitar futuros errores de fecha aquí también -->
         <result property="fechainiciorenta" column="ir_fechainiciorenta"/>
         <result property="fechafinrenta" column="ir_fechafinrenta"/>
-        <association property="item" javaType="Item" 
+        <association property="item" javaType="Item"
                      resultMap="edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ItemMapper.ItemResult"
                      columnPrefix="i_"/>
     </resultMap>
 
-    <!-- Consultar todos los clientes -->
+    <!-- Consultar todos -->
     <select id="consultarClientes" resultMap="ClienteResult">
         SELECT
-            c.documento as c_documento,
-            c.nombre as c_nombre,
-            c.telefono as c_telefono,
-            c.direccion as c_direccion,
-            c.email as c_email,
-            c.vetado as c_vetado,
-            -- ⚠️ QUITAMOS ir.id porque no existe
-            ir.fechainiciorenta as ir_fechainiciorenta,
-            ir.fechafinrenta as ir_fechafinrenta,
-            i.id as i_id,
-            i.nombre as i_nombre,
-            i.descripcion as i_descripcion,
-            i.fechalanzamiento as i_fechaLanzamiento,
-            i.tarifaxdia as i_tarifaxDia,
-            i.formatorenta as i_formatoRenta,
-            i.genero as i_genero,
-            ti.id as ti_id,
-            ti.descripcion as ti_descripcion
+            c.documento AS c_documento,
+            c.nombre AS c_nombre,
+            c.telefono AS c_telefono,
+            c.direccion AS c_direccion,
+            c.email AS c_email,
+            c.vetado AS c_vetado,
+
+            -- Fechas de renta formateadas (por si MyBatis las lee como timestamp)
+            CASE WHEN ir.fechainiciorenta IS NOT NULL
+                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
+                 ELSE NULL END AS ir_fechainiciorenta,
+            CASE WHEN ir.fechafinrenta IS NOT NULL
+                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta)
+                 ELSE NULL END AS ir_fechafinrenta,
+
+            i.id AS i_id,
+            i.nombre AS i_nombre,
+            i.descripcion AS i_descripcion,
+            -- OJO: también formateamos la fecha del ítem aquí
+            strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
+            i.tarifaxdia AS i_tarifaxDia,
+            i.formatorenta AS i_formatoRenta,
+            i.genero AS i_genero,
+            ti.id AS ti_id,
+            ti.descripcion AS ti_descripcion
         FROM VI_CLIENTES c
         LEFT JOIN VI_ITEMRENTADO ir ON c.documento = ir.CLIENTES_documento
         LEFT JOIN VI_ITEMS i ON ir.ITEMS_id = i.id
         LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
     </select>
 
-    <!-- Consultar un cliente por id -->
+    <!-- Consultar uno -->
     <select id="consultarCliente" parameterType="map" resultMap="ClienteResult">
         SELECT
-            c.documento as c_documento,
-            c.nombre as c_nombre,
-            c.telefono as c_telefono,
-            c.direccion as c_direccion,
-            c.email as c_email,
-            c.vetado as c_vetado,
-            -- ⚠️ QUITAMOS ir.id porque no existe
-            ir.fechainiciorenta as ir_fechainiciorenta,
-            ir.fechafinrenta as ir_fechafinrenta,
-            i.id as i_id,
-            i.nombre as i_nombre,
-            i.descripcion as i_descripcion,
-            i.fechalanzamiento as i_fechaLanzamiento,
-            i.tarifaxdia as i_tarifaxDia,
-            i.formatorenta as i_formatoRenta,
-            i.genero as i_genero,
-            ti.id as ti_id,
-            ti.descripcion as ti_descripcion
+            c.documento AS c_documento,
+            c.nombre AS c_nombre,
+            c.telefono AS c_telefono,
+            c.direccion AS c_direccion,
+            c.email AS c_email,
+            c.vetado AS c_vetado,
+
+            CASE WHEN ir.fechainiciorenta IS NOT NULL
+                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
+                 ELSE NULL END AS ir_fechainiciorenta,
+            CASE WHEN ir.fechafinrenta IS NOT NULL
+                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta)
+                 ELSE NULL END AS ir_fechafinrenta,
+
+            i.id AS i_id,
+            i.nombre AS i_nombre,
+            i.descripcion AS i_descripcion,
+            strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
+            i.tarifaxdia AS i_tarifaxDia,
+            i.formatorenta AS i_formatoRenta,
+            i.genero AS i_genero,
+            ti.id AS ti_id,
+            ti.descripcion AS ti_descripcion
         FROM VI_CLIENTES c
         LEFT JOIN VI_ITEMRENTADO ir ON c.documento = ir.CLIENTES_documento
         LEFT JOIN VI_ITEMS i ON ir.ITEMS_id = i.id
@@ -82,7 +92,6 @@
         WHERE c.documento = #{id}
     </select>
 
-    <!-- Agregar item rentado -->
     <insert id="agregarItemRentadoACliente" parameterType="map">
         INSERT INTO VI_ITEMRENTADO(CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
         VALUES (#{id}, #{idit}, #{fechainicio}, #{fechafin})

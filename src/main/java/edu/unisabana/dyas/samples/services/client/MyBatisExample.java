@@ -46,7 +46,8 @@ public class MyBatisExample {
             }
 
             System.out.println("\n========= CONSULTANDO CLIENTE POR ID =========");
-            Cliente c1 = cm.consultarCliente(12345); // ejemplo de documento
+            // En tu tables.sql, los documentos de prueba son 123 y 456
+            Cliente c1 = cm.consultarCliente(123);
             System.out.println(c1);
 
             System.out.println("\n========= CONSULTANDO TIPOS DE ITEMS =========");
@@ -56,7 +57,8 @@ public class MyBatisExample {
             }
 
             System.out.println("\n========= INSERTANDO NUEVO ITEM =========");
-            TipoItem tipo = new TipoItem(1, "Videojuego"); // suponemos que existe tipo con id=1
+            // Asumimos que existe el tipo con id=2 (Videojuego en tu seed)
+            TipoItem tipo = new TipoItem(2, "Videojuego");
             Item nuevo = new Item();
             nuevo.setTipo(tipo);
             nuevo.setNombre("Halo");
@@ -66,7 +68,7 @@ public class MyBatisExample {
             nuevo.setFormatoRenta("Digital");
             nuevo.setGenero("FPS");
 
-            im.insertarItem(nuevo);
+            im.insertarItem(nuevo); // selectKey pone nuevo.id
             sqlss.commit();
             System.out.println("Item insertado con id generado: " + nuevo.getId());
 
@@ -79,9 +81,9 @@ public class MyBatisExample {
             System.out.println("\n========= PROBANDO AGREGAR ITEM RENTADO =========");
             java.sql.Date inicio = new java.sql.Date(System.currentTimeMillis());
             java.sql.Date fin = new java.sql.Date(System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000);
-            cm.agregarItemRentadoACliente(12345, nuevo.getId(), inicio, fin);
+            cm.agregarItemRentadoACliente(123, nuevo.getId(), inicio, fin);
             sqlss.commit();
-            System.out.println("Item rentado agregado al cliente con doc=12345 (itemId=" + nuevo.getId() + ")");
+            System.out.println("Item rentado agregado al cliente con doc=123 (itemId=" + nuevo.getId() + ")");
         }
     }
 }

@@ -17,12 +17,22 @@
     </resultMap>
 
     <resultMap type="ItemRentado" id="ItemRentadoResult">
-        <!-- Si quieres evitar futuros errores de fecha aquí también -->
-        <result property="fechainiciorenta" column="ir_fechainiciorenta"/>
-        <result property="fechafinrenta" column="ir_fechafinrenta"/>
-        <association property="item" javaType="Item"
-                     resultMap="edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ItemMapper.ItemResult"
-                     columnPrefix="i_"/>
+        <id property="id" column="id"/>
+        <result property="fechainiciorenta" column="fechainiciorenta"/>
+        <result property="fechafinrenta" column="fechafinrenta"/>
+        <association property="item" javaType="Item">
+            <id property="id" column="i_id"/>
+            <result property="nombre" column="i_nombre"/>
+            <result property="descripcion" column="i_descripcion"/>
+            <result property="fechaLanzamiento" column="i_fechaLanzamiento"/>
+            <result property="tarifaxDia" column="i_tarifaxDia"/>
+            <result property="formatoRenta" column="i_formatoRenta"/>
+            <result property="genero" column="i_genero"/>
+            <association property="tipo" javaType="TipoItem">
+                <id property="id" column="ti_id"/>
+                <result property="descripcion" column="ti_descripcion"/>
+            </association>
+        </association>
     </resultMap>
 
     <!-- Consultar todos -->
@@ -35,7 +45,7 @@
             c.email AS c_email,
             c.vetado AS c_vetado,
 
-            -- Fechas de renta formateadas (por si MyBatis las lee como timestamp)
+            ir.ITEMS_id AS ir_id,
             CASE WHEN ir.fechainiciorenta IS NOT NULL
                  THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
                  ELSE NULL END AS ir_fechainiciorenta,
@@ -46,7 +56,6 @@
             i.id AS i_id,
             i.nombre AS i_nombre,
             i.descripcion AS i_descripcion,
-            -- OJO: también formateamos la fecha del ítem aquí
             strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
             i.tarifaxdia AS i_tarifaxDia,
             i.formatorenta AS i_formatoRenta,
@@ -69,6 +78,7 @@
             c.email AS c_email,
             c.vetado AS c_vetado,
 
+            ir.ITEMS_id AS ir_id,
             CASE WHEN ir.fechainiciorenta IS NOT NULL
                  THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
                  ELSE NULL END AS ir_fechainiciorenta,

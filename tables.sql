@@ -45,7 +45,7 @@ CREATE TABLE VI_ITEMS (
 -- TABLA DE ÍTEMS RENTADOS (relación cliente - ítem)
 -- =====================================================================
 CREATE TABLE VI_ITEMRENTADO (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- ✅ AÑADIR ESTA COLUMNA
     CLIENTES_documento BIGINT NOT NULL,
     ITEMS_id INT NOT NULL,
     fechainiciorenta DATE NOT NULL,
@@ -63,12 +63,15 @@ INSERT INTO VI_TIPOITEM (descripcion) VALUES ('Película');
 INSERT INTO VI_TIPOITEM (descripcion) VALUES ('Videojuego');
 INSERT INTO VI_TIPOITEM (descripcion) VALUES ('Serie');
 
--- Clientes
+-- Clientes (agregando el 123456789 que mencionas)
 INSERT INTO VI_CLIENTES (documento, nombre, telefono, direccion, email, vetado)
 VALUES (123, 'Juan Pérez', '3001234567', 'Calle 123', 'juan@example.com', 0);
 
 INSERT INTO VI_CLIENTES (documento, nombre, telefono, direccion, email, vetado)
 VALUES (456, 'María Gómez', '3019876543', 'Carrera 45', 'maria@example.com', 0);
+
+INSERT INTO VI_CLIENTES (documento, nombre, telefono, direccion, email, vetado)
+VALUES (123456789, 'Pedro Rodríguez', '3025555555', 'Avenida Principal', 'pedro@example.com', 0);
 
 -- Items
 INSERT INTO VI_ITEMS (nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
@@ -77,9 +80,15 @@ VALUES ('Matrix', 'Película de ciencia ficción', '1999-03-31', 5000, 'DVD', 'A
 INSERT INTO VI_ITEMS (nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
 VALUES ('FIFA 21', 'Videojuego de fútbol', '2020-10-09', 7000, 'BluRay', 'Deportes', 2);
 
+INSERT INTO VI_ITEMS (nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
+VALUES ('Breaking Bad', 'Serie de drama', '2008-01-20', 4000, 'Digital', 'Drama', 3);
+
 -- Items rentados
 INSERT INTO VI_ITEMRENTADO (CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
 VALUES (123, 1, '2025-09-01', '2025-09-05');
 
 INSERT INTO VI_ITEMRENTADO (CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
 VALUES (456, 2, '2025-09-02', NULL);
+
+INSERT INTO VI_ITEMRENTADO (CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
+VALUES (123456789, 3, '2025-09-03', '2025-09-10');

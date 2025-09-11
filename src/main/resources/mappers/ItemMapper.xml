@@ -5,67 +5,74 @@
 
 <mapper namespace="edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ItemMapper">
 
-    <!-- Mapeo de Item -->
-    <resultMap id="ItemResult" type="edu.unisabana.dyas.samples.entities.Item">
-        <id property="id" column="i_id"/>
-        <result property="nombre" column="i_nombre"/>
-        <result property="descripcion" column="i_descripcion"/>
-        <result property="fechaLanzamiento" column="i_fechaLanzamiento"/>
-        <result property="tarifaxDia" column="i_tarifaxDia"/>
-        <result property="formatoRenta" column="i_formatoRenta"/>
-        <result property="genero" column="i_genero"/>
+  <resultMap id="ItemResult" type="edu.unisabana.dyas.samples.entities.Item">
+    <id property="id" column="i_id"/>
+    <result property="nombre" column="i_nombre"/>
+    <result property="descripcion" column="i_descripcion"/>
+    <result property="fechaLanzamiento" column="i_fechaLanzamiento"/>
+    <result property="tarifaxDia" column="i_tarifaxDia"/>
+    <result property="formatoRenta" column="i_formatoRenta"/>
+    <result property="genero" column="i_genero"/>
+    <association property="tipo" javaType="edu.unisabana.dyas.samples.entities.TipoItem">
+      <id property="id" column="ti_id"/>
+      <result property="descripcion" column="ti_descripcion"/>
+    </association>
+  </resultMap>
 
-        <association property="tipo" javaType="edu.unisabana.dyas.samples.entities.TipoItem">
-            <id property="id" column="ti_id"/>
-            <result property="descripcion" column="ti_descripcion"/>
-        </association>
-    </resultMap>
+  <select id="consultarItem" parameterType="int" resultMap="ItemResult">
+    SELECT
+      i.id AS i_id,
+      i.nombre AS i_nombre,
+      i.descripcion AS i_descripcion,
+      CASE
+        WHEN i.fechalanzamiento IS NULL THEN NULL
+        WHEN typeof(i.fechalanzamiento) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento)
+      END AS i_fechaLanzamiento,
+      i.tarifaxdia AS i_tarifaxDia,
+      i.formatorenta AS i_formatoRenta,
+      i.genero AS i_genero,
+      ti.id AS ti_id,
+      ti.descripcion AS ti_descripcion
+    FROM VI_ITEMS i
+    LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
+    WHERE i.id = #{id};
+  </select>
 
-    <!-- Consultar un item por id -->
-    <select id="consultarItem" parameterType="int" resultMap="ItemResult">
-        SELECT
-            i.id AS i_id,
-            i.nombre AS i_nombre,
-            i.descripcion AS i_descripcion,
-            strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
-            i.tarifaxdia AS i_tarifaxDia,
-            i.formatorenta AS i_formatoRenta,
-            i.genero AS i_genero,
-            ti.id AS ti_id,
-            ti.descripcion AS ti_descripcion
-        FROM VI_ITEMS i
-        LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
-        WHERE i.id = #{id}
-    </select>
+  <select id="consultarItems" resultMap="ItemResult">
+    SELECT
+      i.id AS i_id,
+      i.nombre AS i_nombre,
+      i.descripcion AS i_descripcion,
+      CASE
+        WHEN i.fechalanzamiento IS NULL THEN NULL
+        WHEN typeof(i.fechalanzamiento) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento)
+      END AS i_fechaLanzamiento,
+      i.tarifaxdia AS i_tarifaxDia,
+      i.formatorenta AS i_formatoRenta,
+      i.genero AS i_genero,
+      ti.id AS ti_id,
+      ti.descripcion AS ti_descripcion
+    FROM VI_ITEMS i
+    LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
+    ORDER BY i.id;
+  </select>
 
-    <!-- Consultar todos los items -->
-    <select id="consultarItems" resultMap="ItemResult">
-        SELECT
-            i.id AS i_id,
-            i.nombre AS i_nombre,
-            i.descripcion AS i_descripcion,
-            strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
-            i.tarifaxdia AS i_tarifaxDia,
-            i.formatorenta AS i_formatoRenta,
-            i.genero AS i_genero,
-            ti.id AS ti_id,
-            ti.descripcion AS ti_descripcion
-        FROM VI_ITEMS i
-        LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
-    </select>
+  <!-- Deja este INSERT como lo tienes ahora (con selectKey) si tu DB activa no autogenera id -->
+  <insert id="insertarItem"
+          parameterType="edu.unisabana.dyas.samples.entities.Item"
+          useGeneratedKeys="false">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT COALESCE(MAX(id), 0) + 1 FROM VI_ITEMS
+    </selectKey>
 
-    <!-- Insertar un nuevo item -->
-    <insert id="insertarItem"
-            parameterType="edu.unisabana.dyas.samples.entities.Item"
-            useGeneratedKeys="false">
-        <selectKey keyProperty="id" resultType="int" order="BEFORE">
-            SELECT COALESCE(MAX(id), 0) + 1 FROM VI_ITEMS
-        </selectKey>
-
-        INSERT INTO VI_ITEMS(id, nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
-        VALUES (#{id}, #{nombre}, #{descripcion}, #{fechaLanzamiento},
-                #{tarifaxDia}, #{formatoRenta}, #{genero},
-                #{tipo.id})
-    </insert>
+    INSERT INTO VI_ITEMS(id, nombre, descripcion, fechalanzamiento, tarifaxdia, formatorenta, genero, TIPOITEM_id)
+    VALUES (#{id}, #{nombre}, #{descripcion}, #{fechaLanzamiento},
+            #{tarifaxDia}, #{formatoRenta}, #{genero},
+            #{tipo.id});
+  </insert>
 
 </mapper>

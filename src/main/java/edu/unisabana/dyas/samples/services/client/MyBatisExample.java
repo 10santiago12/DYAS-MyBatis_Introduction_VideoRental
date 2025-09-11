@@ -55,7 +55,7 @@ public class MyBatisExample {
             if (!todosClientes.isEmpty()) {
                 long primerDocumento = todosClientes.get(0).getDocumento();
                 System.out.println("Consultando cliente con documento: " + primerDocumento);
-                Cliente c1 = cm.consultarCliente((int) primerDocumento);
+                Cliente c1 = cm.consultarCliente(primerDocumento);
                 System.out.println(c1);
             } else {
                 System.out.println("No hay clientes en la BD");
@@ -68,8 +68,8 @@ public class MyBatisExample {
             }
 
             System.out.println("\n========= INSERTANDO NUEVO ITEM =========");
-            // Usar tipo que existe en tu BD (basado en el output anterior)
-            TipoItem tipo = new TipoItem(2, "Mueble"); // 2 = Mueble según tu output
+            // Usa un tipo existente en tu BD
+            TipoItem tipo = new TipoItem(2, "Mueble");
             Item nuevo = new Item();
             nuevo.setTipo(tipo);
             nuevo.setNombre("Halo");
@@ -93,22 +93,20 @@ public class MyBatisExample {
             java.sql.Date inicio = new java.sql.Date(System.currentTimeMillis());
             java.sql.Date fin = new java.sql.Date(System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000);
 
-            // Usar un documento que realmente exista (basado en el output anterior)
             if (!todosClientes.isEmpty()) {
                 long documentoExistente = todosClientes.get(0).getDocumento();
                 System.out.println("Agregando item rentado al cliente con documento: " + documentoExistente);
-                cm.agregarItemRentadoACliente((int) documentoExistente, nuevo.getId(), inicio, fin);
+                cm.agregarItemRentadoACliente(documentoExistente, nuevo.getId(), inicio, fin);
                 sqlss.commit();
                 System.out.println("Item rentado agregado al cliente con doc=" + documentoExistente + " (itemId=" + nuevo.getId() + ")");
 
                 System.out.println("\n========= CLIENTE ACTUALIZADO =========");
-                Cliente clienteActualizado = cm.consultarCliente((int) documentoExistente);
+                Cliente clienteActualizado = cm.consultarCliente(documentoExistente);
                 System.out.println(clienteActualizado);
             } else {
                 System.out.println("No hay clientes para agregar items rentados");
             }
 
-            // Consulta adicional para ver todos los clientes con sus items rentados
             System.out.println("\n========= TODOS LOS CLIENTES CON ITEMS RENTADOS =========");
             List<Cliente> clientesFinal = cm.consultarClientes();
             for (Cliente c : clientesFinal) {

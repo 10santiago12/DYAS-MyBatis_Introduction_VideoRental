@@ -5,106 +5,139 @@
 
 <mapper namespace="edu.unisabana.dyas.sampleprj.dao.mybatis.mappers.ClienteMapper">
 
-    <resultMap type="Cliente" id="ClienteResult">
-        <id property="documento" column="c_documento"/>
-        <result property="nombre" column="c_nombre"/>
-        <result property="telefono" column="c_telefono"/>
-        <result property="direccion" column="c_direccion"/>
-        <result property="email" column="c_email"/>
-        <result property="vetado" column="c_vetado"/>
-        <collection property="rentados" ofType="ItemRentado"
-                    resultMap="ItemRentadoResult" columnPrefix="ir_"/>
-    </resultMap>
+  <resultMap type="Cliente" id="ClienteResult">
+    <id property="documento" column="c_documento"/>
+    <result property="nombre" column="c_nombre"/>
+    <result property="telefono" column="c_telefono"/>
+    <result property="direccion" column="c_direccion"/>
+    <result property="email" column="c_email"/>
+    <result property="vetado" column="c_vetado"/>
+    <!-- SIN columnPrefix, para que el association vea los i_* -->
+    <collection property="rentados" ofType="ItemRentado" resultMap="ItemRentadoResult"/>
+  </resultMap>
 
-    <resultMap type="ItemRentado" id="ItemRentadoResult">
-        <id property="id" column="id"/>
-        <result property="fechainiciorenta" column="fechainiciorenta"/>
-        <result property="fechafinrenta" column="fechafinrenta"/>
-        <association property="item" javaType="Item">
-            <id property="id" column="i_id"/>
-            <result property="nombre" column="i_nombre"/>
-            <result property="descripcion" column="i_descripcion"/>
-            <result property="fechaLanzamiento" column="i_fechaLanzamiento"/>
-            <result property="tarifaxDia" column="i_tarifaxDia"/>
-            <result property="formatoRenta" column="i_formatoRenta"/>
-            <result property="genero" column="i_genero"/>
-            <association property="tipo" javaType="TipoItem">
-                <id property="id" column="ti_id"/>
-                <result property="descripcion" column="ti_descripcion"/>
-            </association>
-        </association>
-    </resultMap>
+  <resultMap type="ItemRentado" id="ItemRentadoResult">
+    <!-- Usamos ITEMS_id como surrogate-id del rentado -->
+    <id property="id" column="ITEMS_id"/>
+    <result property="fechainiciorenta" column="fechainiciorenta"/>
+    <result property="fechafinrenta" column="fechafinrenta"/>
 
-    <!-- Consultar todos -->
-    <select id="consultarClientes" resultMap="ClienteResult">
-        SELECT
-            c.documento AS c_documento,
-            c.nombre AS c_nombre,
-            c.telefono AS c_telefono,
-            c.direccion AS c_direccion,
-            c.email AS c_email,
-            c.vetado AS c_vetado,
+    <association property="item" javaType="Item">
+      <id property="id" column="i_id"/>
+      <result property="nombre" column="i_nombre"/>
+      <result property="descripcion" column="i_descripcion"/>
+      <result property="fechaLanzamiento" column="i_fechaLanzamiento"/>
+      <result property="tarifaxDia" column="i_tarifaxDia"/>
+      <result property="formatoRenta" column="i_formatoRenta"/>
+      <result property="genero" column="i_genero"/>
+      <association property="tipo" javaType="TipoItem">
+        <id property="id" column="ti_id"/>
+        <result property="descripcion" column="ti_descripcion"/>
+      </association>
+    </association>
+  </resultMap>
 
-            ir.ITEMS_id AS ir_id,
-            CASE WHEN ir.fechainiciorenta IS NOT NULL
-                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
-                 ELSE NULL END AS ir_fechainiciorenta,
-            CASE WHEN ir.fechafinrenta IS NOT NULL
-                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta)
-                 ELSE NULL END AS ir_fechafinrenta,
+  <!-- Consultar todos -->
+  <select id="consultarClientes" resultMap="ClienteResult">
+    SELECT
+      c.documento                                AS c_documento,
+      c.nombre                                   AS c_nombre,
+      c.telefono                                 AS c_telefono,
+      c.direccion                                AS c_direccion,
+      c.email                                    AS c_email,
+      c.vetado                                   AS c_vetado,
 
-            i.id AS i_id,
-            i.nombre AS i_nombre,
-            i.descripcion AS i_descripcion,
-            strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
-            i.tarifaxdia AS i_tarifaxDia,
-            i.formatorenta AS i_formatoRenta,
-            i.genero AS i_genero,
-            ti.id AS ti_id,
-            ti.descripcion AS ti_descripcion
-        FROM VI_CLIENTES c
-        LEFT JOIN VI_ITEMRENTADO ir ON c.documento = ir.CLIENTES_documento
-        LEFT JOIN VI_ITEMS i ON ir.ITEMS_id = i.id
-        LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
-    </select>
+      ir.ITEMS_id                                AS ITEMS_id,
 
-    <!-- Consultar uno -->
-    <select id="consultarCliente" parameterType="map" resultMap="ClienteResult">
-        SELECT
-            c.documento AS c_documento,
-            c.nombre AS c_nombre,
-            c.telefono AS c_telefono,
-            c.direccion AS c_direccion,
-            c.email AS c_email,
-            c.vetado AS c_vetado,
+      -- fechainiciorenta: soporta TEXT ISO o INTEGER (epoch ms)
+      CASE
+        WHEN ir.fechainiciorenta IS NULL THEN NULL
+        WHEN typeof(ir.fechainiciorenta) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
+      END                                         AS fechainiciorenta,
 
-            ir.ITEMS_id AS ir_id,
-            CASE WHEN ir.fechainiciorenta IS NOT NULL
-                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
-                 ELSE NULL END AS ir_fechainiciorenta,
-            CASE WHEN ir.fechafinrenta IS NOT NULL
-                 THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta)
-                 ELSE NULL END AS ir_fechafinrenta,
+      -- fechafinrenta: igual lógica
+      CASE
+        WHEN ir.fechafinrenta IS NULL THEN NULL
+        WHEN typeof(ir.fechafinrenta) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta)
+      END                                         AS fechafinrenta,
 
-            i.id AS i_id,
-            i.nombre AS i_nombre,
-            i.descripcion AS i_descripcion,
-            strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento) AS i_fechaLanzamiento,
-            i.tarifaxdia AS i_tarifaxDia,
-            i.formatorenta AS i_formatoRenta,
-            i.genero AS i_genero,
-            ti.id AS ti_id,
-            ti.descripcion AS ti_descripcion
-        FROM VI_CLIENTES c
-        LEFT JOIN VI_ITEMRENTADO ir ON c.documento = ir.CLIENTES_documento
-        LEFT JOIN VI_ITEMS i ON ir.ITEMS_id = i.id
-        LEFT JOIN VI_TIPOITEM ti ON i.TIPOITEM_id = ti.id
-        WHERE c.documento = #{id}
-    </select>
+      i.id                                       AS i_id,
+      i.nombre                                   AS i_nombre,
+      i.descripcion                              AS i_descripcion,
+      CASE
+        WHEN i.fechalanzamiento IS NULL THEN NULL
+        WHEN typeof(i.fechalanzamiento) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento)
+      END                                         AS i_fechaLanzamiento,
+      i.tarifaxdia                               AS i_tarifaxDia,
+      i.formatorenta                             AS i_formatoRenta,
+      i.genero                                   AS i_genero,
 
-    <insert id="agregarItemRentadoACliente" parameterType="map">
-        INSERT INTO VI_ITEMRENTADO(CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
-        VALUES (#{id}, #{idit}, #{fechainicio}, #{fechafin})
-    </insert>
+      ti.id                                      AS ti_id,
+      ti.descripcion                             AS ti_descripcion
+    FROM VI_CLIENTES c
+    LEFT JOIN VI_ITEMRENTADO ir ON c.documento = ir.CLIENTES_documento
+    LEFT JOIN VI_ITEMS i        ON ir.ITEMS_id = i.id
+    LEFT JOIN VI_TIPOITEM ti    ON i.TIPOITEM_id = ti.id
+    ORDER BY c.documento;
+  </select>
+
+  <!-- Consultar uno -->
+  <select id="consultarCliente" parameterType="map" resultMap="ClienteResult">
+    SELECT
+      c.documento                                AS c_documento,
+      c.nombre                                   AS c_nombre,
+      c.telefono                                 AS c_telefono,
+      c.direccion                                AS c_direccion,
+      c.email                                    AS c_email,
+      c.vetado                                   AS c_vetado,
+
+      ir.ITEMS_id                                AS ITEMS_id,
+
+      CASE
+        WHEN ir.fechainiciorenta IS NULL THEN NULL
+        WHEN typeof(ir.fechainiciorenta) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', ir.fechainiciorenta)
+      END                                         AS fechainiciorenta,
+
+      CASE
+        WHEN ir.fechafinrenta IS NULL THEN NULL
+        WHEN typeof(ir.fechafinrenta) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', ir.fechafinrenta)
+      END                                         AS fechafinrenta,
+
+      i.id                                       AS i_id,
+      i.nombre                                   AS i_nombre,
+      i.descripcion                              AS i_descripcion,
+      CASE
+        WHEN i.fechalanzamiento IS NULL THEN NULL
+        WHEN typeof(i.fechalanzamiento) = 'integer'
+          THEN strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento/1000, 'unixepoch')
+        ELSE strftime('%Y-%m-%d %H:%M:%f', i.fechalanzamiento)
+      END                                         AS i_fechaLanzamiento,
+      i.tarifaxdia                               AS i_tarifaxDia,
+      i.formatorenta                             AS i_formatoRenta,
+      i.genero                                   AS i_genero,
+
+      ti.id                                      AS ti_id,
+      ti.descripcion                             AS ti_descripcion
+    FROM VI_CLIENTES c
+    LEFT JOIN VI_ITEMRENTADO ir ON c.documento = ir.CLIENTES_documento
+    LEFT JOIN VI_ITEMS i        ON ir.ITEMS_id = i.id
+    LEFT JOIN VI_TIPOITEM ti    ON i.TIPOITEM_id = ti.id
+    WHERE c.documento = #{id};
+  </select>
+
+  <insert id="agregarItemRentadoACliente" parameterType="map">
+    INSERT INTO VI_ITEMRENTADO(CLIENTES_documento, ITEMS_id, fechainiciorenta, fechafinrenta)
+    VALUES (#{id}, #{idit}, #{fechainicio}, #{fechafin});
+  </insert>
 
 </mapper>
